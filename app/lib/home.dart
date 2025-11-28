@@ -60,7 +60,6 @@ class _HomeState extends State<Home> {
                   subtitle: Text(p.direccion),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () async {
-                    // Al regresar, recargamos la lista por si entregó
                     await Navigator.push(context, MaterialPageRoute(builder: (_) => DetalleEntregaScreen(paquete: p)));
                     setState(() {}); 
                   },
