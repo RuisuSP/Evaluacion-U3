@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'main.dart';
-import 'home_screen.dart';
+import 'home.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class Login extends StatefulWidget {
+  const Login({super.key});
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<Login> createState() => _LoginState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginState extends State<Login> {
   final _correoCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _isLoading = false;
@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (exito && mounted) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const Home()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Credenciales incorrectas'), backgroundColor: Colors.red),

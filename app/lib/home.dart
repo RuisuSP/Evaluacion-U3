@@ -3,19 +3,18 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/foundation.dart'; // Para kIsWeb
-import 'main.dart';         // Importa modelos
-import 'login_screen.dart'; // Para poder salir (logout)
+import 'package:flutter/foundation.dart';
+import 'main.dart';
+import 'login.dart';
 import 'dart:io';
 
-// --- PANTALLA DE LISTA DE PAQUETES ---
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<Home> createState() => _HomeState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -28,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.exit_to_app),
             onPressed: () {
               auth.logout();
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const Login()));
             },
           )
         ],

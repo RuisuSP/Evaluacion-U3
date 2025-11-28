@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'login_screen.dart';
+import 'login.dart';
 class Usuario {
   final int id;
   final String nombre;
@@ -161,7 +160,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const LoginScreen(),
+      home: const Login(),
     );
   }
 }

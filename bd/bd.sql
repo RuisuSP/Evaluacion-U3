@@ -1,3 +1,4 @@
+# bd.sql
 CREATE DATABASE IF NOT EXISTS db_paquexpress;
 USE db_paquexpress;
 

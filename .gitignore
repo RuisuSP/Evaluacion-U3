@@ -1,11 +1,12 @@
-# --- Python / FastAPI ---
+# .gitignore
+# Python / FastAPI
 __pycache__/
 *.py[cod]
 .venv/
 env/
 .env
 
-# --- Flutter ---
+# Flutter
 .dart_tool/
 .packages
 .pub/
@@ -15,7 +16,7 @@ packages
 .flutter-plugins
 .flutter-plugins-dependencies
 
-# --- Archivos de sistema y IDE ---
+# Archivos de sistema
 .idea/
 .vscode/
 *.ds_store
