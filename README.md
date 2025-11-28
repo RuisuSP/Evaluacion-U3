@@ -48,8 +48,12 @@ Asegurarse de que coincida con los valores reales del servidor MySQL:
 Si estos parámetros son distintos, deben modificarse en DATABASE_URL.
 
 2. Ejecutar el backend (API)
+
+Abrir la carpeta de la API
+cd api
+
 Crear o activar el entorno virtual (Windows PowerShell)
-api\env\Scripts\Activate.ps1
+.\env\Scripts\Activate.ps1
 
 Si el entorno no existe, crearlo antes con:
     python -m venv env
