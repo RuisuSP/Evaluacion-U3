@@ -73,8 +73,6 @@ class _HomeState extends State<Home> {
     );
   }
 }
-
-// --- PANTALLA DE DETALLE Y ENTREGA ---
 class DetalleEntregaScreen extends StatefulWidget {
   final Paquete paquete;
   const DetalleEntregaScreen({super.key, required this.paquete});
