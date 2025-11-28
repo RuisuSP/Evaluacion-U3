@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'main.dart';        // Importa tus modelos y provider
-import 'home_screen.dart'; // Importa la pantalla siguiente
+import 'main.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
     
     setState(() => _isLoading = true);
     
-    // Llamamos al Provider que está en main.dart
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final exito = await auth.login(_correoCtrl.text.trim(), _passCtrl.text.trim());
     

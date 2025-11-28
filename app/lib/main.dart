@@ -1,17 +1,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart'; // Para kIsWeb
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 
-// IMPORTA TUS PANTALLAS (Asegúrate que los nombres coincidan)
 import 'login_screen.dart';
-
-// ==========================================
-// 1. MODELOS DE DATOS
-// ==========================================
 class Usuario {
   final int id;
   final String nombre;
@@ -50,10 +45,6 @@ class Paquete {
     );
   }
 }
-
-// ==========================================
-// 2. PROVIDER (Lógica de negocio)
-// ==========================================
 class AuthProvider with ChangeNotifier {
   // OJO: Si usas Chrome, localhost está bien.
   final String baseUrl = 'http://localhost:8000';
@@ -86,7 +77,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // --- OBTENER PAQUETES ---
   Future<List<Paquete>> obtenerPaquetes() async {
     if (_usuario == null) return [];
     try {
@@ -104,7 +94,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // --- ENTREGAR PAQUETE ---
   Future<bool> entregarPaquete(int idPaquete, XFile foto, double lat, double lon) async {
     try {
       final url = Uri.parse('$baseUrl/entregar/$idPaquete');
@@ -138,9 +127,6 @@ class AuthProvider with ChangeNotifier {
   }
 }
 
-// ==========================================
-// 3. MAIN (Arranque)
-// ==========================================
 void main() {
   runApp(
     MultiProvider(

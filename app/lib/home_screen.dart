@@ -89,9 +89,7 @@ class _DetalleEntregaScreenState extends State<DetalleEntregaScreen> {
   bool _enviando = false;
 
   Future<void> _abrirMapa() async {
-    // Codificar dirección para URL
     final query = Uri.encodeComponent(widget.paquete.direccion);
-    // Usamos el buscador genérico de Google Maps
     final googleUrl = Uri.parse("https://www.google.com/maps/search/?api=1&query=$query");
     
     if (await canLaunchUrl(googleUrl)) {
@@ -125,7 +123,7 @@ class _DetalleEntregaScreenState extends State<DetalleEntregaScreen> {
 
       if (exito && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Entrega registrada con éxito"), backgroundColor: Colors.green));
-        Navigator.pop(context); // Regresa a la lista
+        Navigator.pop(context);
       } else {
         throw Exception("Error en API");
       }
@@ -145,7 +143,6 @@ class _DetalleEntregaScreenState extends State<DetalleEntregaScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // INFORMACIÓN
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -169,7 +166,6 @@ class _DetalleEntregaScreenState extends State<DetalleEntregaScreen> {
             ),
             const SizedBox(height: 15),
 
-            // BOTÓN MAPA
             OutlinedButton.icon(
               onPressed: _abrirMapa,
               icon: const Icon(Icons.map),
@@ -184,7 +180,6 @@ class _DetalleEntregaScreenState extends State<DetalleEntregaScreen> {
             const Text("Evidencia de Entrega", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 10),
 
-            // AREA DE FOTO
             InkWell(
               onTap: _tomarFoto,
               child: Container(
@@ -204,13 +199,12 @@ class _DetalleEntregaScreenState extends State<DetalleEntregaScreen> {
                       )
                     : kIsWeb 
                         ? Image.network(_imagen!.path, fit: BoxFit.cover) 
-                        : Image.file(File(_imagen!.path), fit: BoxFit.cover), // Corrección para que no de error
+                        : Image.file(File(_imagen!.path), fit: BoxFit.cover),
               ),
             ),
 
             const SizedBox(height: 30),
 
-            // BOTÓN FINAL
             ElevatedButton(
               onPressed: _enviando ? null : _confirmarEntrega,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
