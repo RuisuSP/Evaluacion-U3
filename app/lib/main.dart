@@ -44,14 +44,12 @@ class Paquete {
   }
 }
 class AuthProvider with ChangeNotifier {
-  // OJO: Si usas Chrome, localhost está bien.
   final String baseUrl = 'http://localhost:8000';
   
   Usuario? _usuario;
   Usuario? get usuario => _usuario;
   bool get estaAutenticado => _usuario != null;
 
-  // --- LOGIN ---
   Future<bool> login(String correo, String password) async {
     try {
       final url = Uri.parse('$baseUrl/login');
