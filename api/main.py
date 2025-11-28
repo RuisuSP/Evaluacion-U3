@@ -116,7 +116,7 @@ async def entregar_paquete(
         if not paquete:
             raise HTTPException(status_code=404, detail="Paquete no encontrado")
 
-        nombre_archivo = f"entrega_{id_paquete}_{file.filename}"
+        nombre_archivo = f"{file.filename}"
         ruta_guardado = f"{UPLOAD_FOLDER}/{nombre_archivo}"
         
         with open(ruta_guardado, "wb") as buffer:
