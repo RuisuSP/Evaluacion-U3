@@ -1,186 +1,181 @@
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart'; // Para kIsWeb
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
-import 'dart:typed_data';
 
-// API en localhost (Chrome NO usa 0.0.0.0)
-const String apiUrl = "http://localhost:8000";
+// IMPORTA TUS PANTALLAS (Asegúrate que los nombres coincidan)
+import 'login_screen.dart';
 
+// ==========================================
+// 1. MODELOS DE DATOS
+// ==========================================
+class Usuario {
+  final int id;
+  final String nombre;
+  final String rol;
+
+  Usuario({required this.id, required this.nombre, required this.rol});
+
+  factory Usuario.fromJson(Map<String, dynamic> json) {
+    return Usuario(
+      id: json['id_usuario'],
+      nombre: json['nombre'],
+      rol: json['rol'],
+    );
+  }
+}
+
+class Paquete {
+  final int id;
+  final String descripcion;
+  final String direccion;
+  final String estado;
+
+  Paquete({
+    required this.id,
+    required this.descripcion,
+    required this.direccion,
+    required this.estado,
+  });
+
+  factory Paquete.fromJson(Map<String, dynamic> json) {
+    return Paquete(
+      id: json['id_paquete'],
+      descripcion: json['descripcion'],
+      direccion: json['direccion_destino'],
+      estado: json['estado'],
+    );
+  }
+}
+
+// ==========================================
+// 2. PROVIDER (Lógica de negocio)
+// ==========================================
+class AuthProvider with ChangeNotifier {
+  // OJO: Si usas Chrome, localhost está bien.
+  final String baseUrl = 'http://localhost:8000';
+  
+  Usuario? _usuario;
+  Usuario? get usuario => _usuario;
+  bool get estaAutenticado => _usuario != null;
+
+  // --- LOGIN ---
+  Future<bool> login(String correo, String password) async {
+    try {
+      final url = Uri.parse('$baseUrl/login');
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"correo": correo, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _usuario = Usuario.fromJson(data);
+        notifyListeners();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print("Error Login: $e");
+      return false;
+    }
+  }
+
+  // --- OBTENER PAQUETES ---
+  Future<List<Paquete>> obtenerPaquetes() async {
+    if (_usuario == null) return [];
+    try {
+      final url = Uri.parse('$baseUrl/mis-paquetes/${_usuario!.id}');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.map((e) => Paquete.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      print("Error Paquetes: $e");
+      return [];
+    }
+  }
+
+  // --- ENTREGAR PAQUETE ---
+  Future<bool> entregarPaquete(int idPaquete, XFile foto, double lat, double lon) async {
+    try {
+      final url = Uri.parse('$baseUrl/entregar/$idPaquete');
+      var request = http.MultipartRequest("POST", url);
+
+      request.fields['latitud'] = lat.toString();
+      request.fields['longitud'] = lon.toString();
+
+      if (kIsWeb) {
+        Uint8List bytes = await foto.readAsBytes();
+        request.files.add(http.MultipartFile.fromBytes(
+          'file',
+          bytes,
+          filename: foto.name,
+        ));
+      } else {
+        request.files.add(await http.MultipartFile.fromPath('file', foto.path));
+      }
+
+      final response = await request.send();
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Error Entrega: $e");
+      return false;
+    }
+  }
+
+  void logout() {
+    _usuario = null;
+    notifyListeners();
+  }
+}
+
+// ==========================================
+// 3. MAIN (Arranque)
+// ==========================================
 void main() {
-	runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-	const MyApp({super.key});
+  const MyApp({super.key});
 
-	@override
-	Widget build(BuildContext context) {
-		return MaterialApp(
-			debugShowCheckedModeBanner: false,
-			title: 'Práctica 10 - Flutter',
-			theme: ThemeData(primarySwatch: Colors.blue),
-			home: const HomePage(),
-		);
-	}
-}
-
-class HomePage extends StatefulWidget {
-	const HomePage({super.key});
-
-	@override
-	_HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-	File? imagenLocal;
-	Uint8List? imagenWeb;
-	String? nombreArchivo;
-	final TextEditingController descCtrl = TextEditingController();
-
-	Future<void> seleccionarImagen() async {
-		final picker = ImagePicker();
-		final XFile? img = await picker.pickImage(source: ImageSource.gallery);
-
-		if (img == null) return;
-
-		nombreArchivo = img.name;
-
-		if (kIsWeb) {
-			imagenWeb = await img.readAsBytes();
-			imagenLocal = null;
-		} else {
-			imagenLocal = File(img.path);
-			imagenWeb = null;
-		}
-
-		setState(() {});
-	}
-
-	Future<void> subirImagen() async {
-		if (imagenLocal == null && imagenWeb == null) {
-			ScaffoldMessenger.of(context).showSnackBar(
-				const SnackBar(content: Text("Selecciona una imagen primero")),
-			);
-			return;
-		}
-
-		try {
-			final url = Uri.parse("$apiUrl/fotos/");
-			var request = http.MultipartRequest("POST", url);
-
-			request.fields["descripcion"] = descCtrl.text.trim();
-
-			if (kIsWeb) {
-				request.files.add(
-					http.MultipartFile.fromBytes(
-						'file',
-						imagenWeb!,
-						filename: nombreArchivo ?? "imagen.png",
-					),
-				);
-			} else {
-				request.files.add(
-					await http.MultipartFile.fromPath(
-						"file",
-						imagenLocal!.path,
-						filename: nombreArchivo,
-					),
-				);
-			}
-
-			final response = await request.send();
-
-			if (response.statusCode == 200) {
-				ScaffoldMessenger.of(context).showSnackBar(
-					const SnackBar(
-						content: Text("Imagen subida correctamente"),
-						backgroundColor: Colors.green,
-					),
-				);
-
-				descCtrl.clear();
-				imagenLocal = null;
-				imagenWeb = null;
-				nombreArchivo = null;
-
-				setState(() {});
-			} else {
-				print("Error al subir (status): ${response.statusCode}");
-			}
-		} catch (e) {
-			print("Error al subir imagen: $e");
-		}
-	}
-
-	Widget vistaPrevia() {
-		if (imagenLocal == null && imagenWeb == null) {
-			return Container(
-				height: 220,
-				alignment: Alignment.center,
-				child: const Text("No hay imagen seleccionada"),
-			);
-		}
-
-		return Container(
-			constraints: const BoxConstraints(maxHeight: 400),
-			margin: const EdgeInsets.only(bottom: 20),
-			child: kIsWeb
-					? Image.memory(imagenWeb!, fit: BoxFit.contain)
-					: Image.file(imagenLocal!, fit: BoxFit.contain),
-		);
-	}
-
-	@override
-	Widget build(BuildContext context) {
-		return Scaffold(
-			appBar: AppBar(title: const Text("Práctica 10 - Flutter")),
-			body: ListView(
-				padding: const EdgeInsets.all(15),
-				children: [
-					const Text(
-						"Subir Foto",
-						style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-					),
-
-					const SizedBox(height: 20),
-
-					vistaPrevia(),
-
-					TextField(
-						controller: descCtrl,
-						decoration: const InputDecoration(
-							labelText: "Descripción",
-							border: OutlineInputBorder(),
-						),
-					),
-
-					const SizedBox(height: 20),
-
-					ElevatedButton.icon(
-						onPressed: seleccionarImagen,
-						icon: const Icon(Icons.photo),
-						label: const Text("Seleccionar Imagen"),
-						style: ElevatedButton.styleFrom(
-							backgroundColor: Colors.blue,
-							minimumSize: const Size(double.infinity, 50),
-						),
-					),
-
-					const SizedBox(height: 10),
-
-					ElevatedButton.icon(
-						onPressed: subirImagen,
-						icon: const Icon(Icons.cloud_upload),
-						label: const Text("Subir a la API"),
-						style: ElevatedButton.styleFrom(
-							backgroundColor: Colors.green,
-							minimumSize: const Size(double.infinity, 50),
-						),
-					),
-				],
-			),
-		);
-	}
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Paquexpress',
+      theme: ThemeData(
+        primaryColor: const Color(0xFF0D47A1),
+        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1565C0),
+          foregroundColor: Colors.white,
+          elevation: 2,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1565C0),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      ),
+      home: const LoginScreen(),
+    );
+  }
 }
